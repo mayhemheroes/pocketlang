@@ -1,7 +1,6 @@
-project: rnshah9/mayhem-pocketlang
+project: pocketlang
 target: pocket
-tests: null
 
 cmds:
-  - cmd: /repo/build/Debug/bin/pocket @@
+  - cmd: /repo/build/Debug/bin/pocket /test.pk
     filepath: /test.pk

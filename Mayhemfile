@@ -2,5 +2,4 @@ project: pocketlang
 target: pocket
 
 cmds:
-  - cmd: /repo/build/Debug/bin/pocket /test.pk
-    filepath: /test.pk
+  - cmd: /repo/build/Debug/bin/pocket @@

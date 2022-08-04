@@ -7,6 +7,13 @@ assert(42 % 40.0 == 2)
 assert("'\"'" == '\'"\'')
 assert("testing" == "test" + "ing")
 
+assert("foo \
+bar" == "foo bar")
+
+assert('abc ' * 3 == 'abc abc abc ')
+assert('' * 1000 == '')
+assert('foo' * 0 == '')
+
 assert(-0b10110010 == -178 and 0b11001010 == 202)
 assert(0b1111111111111111 == 65535)
 assert(
@@ -52,6 +59,13 @@ get_true = fn return true end
 if a and b then assert(false) end
 if a or b then val = 42 else assert(false) end assert(val == 42)
 if get_true() or false then val = 12 end assert(val == 12)
+
+if (get_true() or false) and ## New line after and.
+   ((a or b) or (a and b))
+  assert(true) ## Reachable.
+else
+  assert(false) ## Unreachable
+end
 
 ## Newer logical or implementation.
 ## a or b  === if (a) return a else return b
@@ -158,6 +172,17 @@ assert("Hello $name!" == "Hello World!")
 b = 'vb'; d = 'vd'; f = 'vf'
 assert("a ${ b + ' c ${d + " e ${f}"}' }" == "a vb c vd e vf")
 assert("$b$d$f" == "vbvdvf")
+
+def foo()
+  "a docstring to test"
+end
+assert(foo._docs == "a docstring to test")
+
+class Foo
+  "Testing for
+  class docstring"
+end
+assert(Foo._docs == "Testing for\n  class docstring")
 
 
 # If we got here, that means all test were passed.

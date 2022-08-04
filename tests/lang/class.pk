@@ -5,6 +5,20 @@
 
 ## TODO: write some tests here.
 
+## No enums supports (yet?)
+class Day end
+Day.SUNDAY    = 0
+Day.MONDAY    = 1
+Day.TUESDAY   = 2
+Day.WEDNESDAY = 3
+Day.THURSDAY  = 4
+Day.FRIDAY    = 5
+Day.SATURDAY  = 6
+
+assert(Day.SUNDAY == 0)
+assert(Day.FRIDAY == 5)
+
+
 ###############################################################################
 ## INHERITANCE
 ###############################################################################
@@ -20,6 +34,8 @@ print(a)
 
 b = B()
 assert((b is B) and (b is A))
+
+assert(B.parent == A)
 
 class Shape
   def display()
@@ -119,7 +135,7 @@ class Path
   def /(other)
     if other is String
       return Path(self.path + "/" + other)
-    else if other is Path
+    elif other is Path
       return Path(self.path + "/" + other.path)
     else
       assert(false, "Invalid type")

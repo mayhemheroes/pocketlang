@@ -3,39 +3,43 @@
 ## Copyright (c) 2021-2022 Pocketlang Contributors
 ## Distributed Under The MIT License
 
-raise Exception("The paths of the files should be fixed "
-      "after this script is moved to scripts/ directory.")
-
 import re, os
 from os.path import (join, exists, abspath,
                      relpath, dirname)
 
-## The absolute path of this file, when run as a script.
-## This file is not intended to be included in other files at the moment.
-THIS_PATH = abspath(dirname(__file__))
+## Pocket lang root directory. All the listed paths bellow are relative to
+## the root path.
+ROOT_PATH = abspath(join(dirname(__file__), "../"))
 
-POCKET_HEADER = join(THIS_PATH, "../src/include/pocketlang.h")
-TARGET_NATIVE = join(THIS_PATH, "./modules/pknative.gen.c")
-TARGET_DL     = join(THIS_PATH, "./modules/std_dl_api.gen.h")
+NATIVE_API_EXT = "pknative.c"
+NATIVE_API_IMP = "nativeapi.h"
+
+POCKET_HEADER = join(ROOT_PATH, f"src/include/pocketlang.h")
+TARGET_EXT    = join(ROOT_PATH, f"tests/native/dl/{NATIVE_API_EXT}")
+TARGET_IMP    = join(ROOT_PATH, f"src/libs/gen/{NATIVE_API_IMP}")
+DL_IMPLEMENT  = 'PK_DL_IMPLEMENT'
 
 PK_API = "pk_api"
 PK_API_TYPE = "PkNativeApi"
+PK_API_INIT = 'pkInitApi'
+PK_EXPORT_MODULE = 'pkExportModule'
+PK_CLEANUP_MODULE = 'pkCleanupModule'
+
 API_DEF = f'''\
 static {PK_API_TYPE} {PK_API};
 
-void pkInitApi({PK_API_TYPE}* api) {{%s
+PK_EXPORT void {PK_API_INIT}({PK_API_TYPE}* api) {{%s
 }}
 '''
 
-SOURCE_GEN = f'''\
+## '%s' left for other includes.
+HEADER = f'''\
 /*
  *  Copyright (c) 2020-2022 Thakee Nathees
  *  Copyright (c) 2021-2022 Pocketlang Contributors
  *  Distributed Under The MIT License
  */
-
-#include <pocketlang.h>
-
+%s
 // !! THIS FILE IS GENERATED DO NOT EDIT !!
 
 '''
@@ -77,6 +81,7 @@ def get_api_functions():
   match = re.findall(r'^PK_PUBLIC [\S\n ]+?;', source, re.MULTILINE)
   for m in match:
     definition = flaten(m)
+    if '...' in definition: continue ## FIXME: VA ARGS
     api_functions.append(parse_definition(definition))
   return api_functions
 
@@ -114,36 +119,45 @@ def init_api(api_functions):
   return API_DEF % assign + '\n'
 
 def make_api(api_functions):
-  source = "#if defined(NATIVE_API_IMPLEMENT)\n\n"
-  source += f"{PK_API_TYPE} dlMakeApi() {{\n\n"
+  source = f"{PK_API_TYPE} pkMakeNativeAPI() {{\n\n"
   source += f"  {PK_API_TYPE} api;\n\n"
   for fn, params, ret in api_functions:
     source += f"  api.{fn}_ptr = {fn};\n"
   source += "\n"
   source += "  return api;\n"
   source += "}\n\n"
-  source += "#endif // NATIVE_API_IMPLEMENT\n\n"
   return source
 
 def generate():
   api_functions = get_api_functions()
 
-  ## Generate pocket native api.
-  with open(TARGET_NATIVE, 'w') as fp:
-    fp.write(SOURCE_GEN)
+  ## Generate pocket native header.
+  with open(TARGET_EXT, 'w') as fp:
+    fp.write(HEADER % '\n#include <pocketlang.h>\n')
     fp.write(fn_typedefs(api_functions))
     fp.write(api_typedef(api_functions))
     fp.write(init_api(api_functions))
     fp.write(define_functions(api_functions))
 
-  ## Generate dl module api definition.
-  with open(TARGET_DL, 'w') as fp:
-    fp.write(SOURCE_GEN)
+  ## Generate native api source.
+  with open(TARGET_IMP, 'w') as fp:
+    fp.write(HEADER % '\n#ifndef PK_AMALGAMATED\n#include <pocketlang.h>\n#endif\n\n')
+
     fp.write(fn_typedefs(api_functions))
     fp.write(api_typedef(api_functions))
+
+    fp.write(f'#define PK_API_INIT_FN_NAME "{PK_API_INIT}" \n')
+    fp.write(f'#define PK_EXPORT_FN_NAME "{PK_EXPORT_MODULE}" \n\n')
+    fp.write(f'#define PK_CLEANUP_FN_NAME "{PK_CLEANUP_MODULE}" \n\n')
+    fp.write(f'typedef void (*{PK_API_INIT}Fn)({PK_API_TYPE}*);\n')
+    fp.write(f'typedef PkHandle* (*{PK_EXPORT_MODULE}Fn)(PKVM*);\n')
+    fp.write(f'\n')
+
+    fp.write(f'#ifdef {DL_IMPLEMENT}\n\n')
     fp.write(make_api(api_functions))
+    fp.write(f'#endif // {DL_IMPLEMENT}\n')
 
 if __name__ == "__main__":
   generate()
-  print("Generated:", relpath(TARGET_NATIVE, os.getcwd()))
-  print("Generated:", relpath(TARGET_DL, os.getcwd()))
+  print("Generated:", relpath(TARGET_EXT, ROOT_PATH))
+  print("Generated:", relpath(TARGET_IMP, ROOT_PATH))

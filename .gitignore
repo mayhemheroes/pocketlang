@@ -42,3 +42,4 @@ docs/static/wasm/
 *.exe
 *.out
 *.app
+rlenv/mayhem/data/testsuite

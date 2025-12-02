@@ -1,0 +1,12 @@
+{
+  "workspace": "mayhemheroes",
+  "project": "pocketlang",
+  "target": "pocket",
+  "run_id": "2",
+  "ci_url": "https://github.com:443/mayhemheroes/pocketlang/actions/runs/3113340642",
+  "run_image_name": "ghcr.io/mayhemheroes/pocketlang:master",
+  "run_image_with_digest": "ghcr.io/mayhemheroes/pocketlang@sha256:19069ac2a2f5bd3e4544e65848e80d7b73ca7f073e89fc4da027b8b7a270e561",
+  "git_repo_url": "git@github.com:mayhemheroes/pocketlang.git",
+  "git_revision": "68ae71b3d56a017a77f6b11a7dda0b04a36ddf92",
+  "target_executable": "/repo/build/Debug/bin/pocket"
+}

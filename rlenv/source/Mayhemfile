@@ -1,0 +1,10 @@
+project: mayhemheroes/pocketlang
+target: pocket
+
+cmds:
+  - cmd: /repo/build/Debug/bin/pocket @@
+    env: {}
+image: ghcr.io/mayhemheroes/pocketlang@sha256:19069ac2a2f5bd3e4544e65848e80d7b73ca7f073e89fc4da027b8b7a270e561
+duration: 60
+testsuite:
+  - https://app.mayhem.security/mayhemheroes/pocketlang/pocket/testsuite.tar
